@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NetAnime - Anime Details</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/ScrollTrigger.min.js"></script>
+    <style>
+        body {
+            background-color: #141414;
+            color: #fff;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+        }
+        .hero-gradient {
+            background: linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(20,20,20,1) 100%);
+        }
+        .netflix-btn {
+            background-color: #e50914;
+        }
+        .netflix-btn:hover {
+            background-color: #f40612;
+        }
+        .genre-tag {
+            background-color: rgba(255, 255, 255, 0.1);
+            transition: all 0.2s;
+        }
+        .genre-tag:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        .episode-card {
+            background-color: #2f2f2f;
+            transition: all 0.3s;
+        }
+        .episode-card:hover {
+            background-color: #3f3f3f;
+            transform: scale(1.02);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .navbar {
+            background-color: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+        }
+        .badge {
+            font-size: 0.65rem;
+            padding: 0.15rem 0.4rem;
+            border-radius: 0.25rem;
+        }
+        .badge-sub {
+            background-color: #3b82f6;
+        }
+        .badge-dub {
+            background-color: #10b981;
+        }
+        .badge-hd {
+            background-color: #f59e0b;
+        }
+        .episode-skeleton {
+            background: linear-gradient(90deg, #2f2f2f 25%, #3f3f3f 50%, #2f2f2f 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+        }
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        .fade-in {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .truncate-lines {
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        #scrollToTop {
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+        #scrollToTop.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+        .hover-scale {
+            transition: transform 0.2s;
+        }
+        .hover-scale:hover {
+            transform: scale(1.05);
+        }
+        .notification-dot {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            width: 8px;
+            height: 8px;
+            background-color: #e50914;
+            border-radius: 50%;
+        }
+    </style>
+</head>
+<body>
+    <!-- Scroll to Top Button -->
+    <button id="scrollToTop" class="fixed bottom-8 right-8 z-50 w-12 h-12 rounded-full bg-red-600 text-white flex items-center justify-center shadow-lg hover:bg-red-700 transition-all">
+        <i class="fas fa-chevron-up"></i>
+    </button>
+
+    <!-- Navbar -->
+    <nav class="navbar fixed top-0 w-full z-50 py-3 px-4 md:px-16 flex items-center justify-between transition-all duration-500">
+        <div class="flex items-center">
+            <a href="index.html" class="text-red-600 font-bold text-3xl mr-10 hover-scale">NETANIME</a>
+            <div class="hidden md:flex space-x-6">
+                <a href="#" class="text-gray-300 hover:text-white transition-colors">Home</a>
+                <a href="#" class="text-gray-300 hover:text-white transition-colors">Series</a>
+                <a href="#" class="text-gray-300 hover:text-white transition-colors">Movies</a>
+                <a href="#" class="text-gray-300 hover:text-white transition-colors">New</a>
+                <a href="#" class="text-gray-300 hover:text-white transition-colors">My List</a>
+            </div>
+        </div>
+        <div class="flex items-center space-x-6">
+            <div class="relative">
+                <i class="fas fa-search text-gray-300 text-lg hover:text-white cursor-pointer transition-colors"></i>
+            </div>
+            <div class="relative">
+                <i class="fas fa-bell text-gray-300 text-lg hover:text-white cursor-pointer transition-colors"></i>
+                <span class="notification-dot"></span>
+            </div>
+            <div class="w-8 h-8 bg-blue-500 rounded cursor-pointer hover-scale"></div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mx-auto px-4 pt-20">
+        <!-- Anime Hero Section -->
+        <div id="animeHero" class="relative w-full h-96 md:h-screen/2 mb-8 overflow-hidden rounded-lg">
+            <!-- Hero image and gradient overlay will be added by JavaScript -->
+        </div>
+
+        <!-- Anime Details Section -->
+        <div id="animeDetails" class="mb-8">
+            <!-- Loading skeleton -->
+            <div class="animate-pulse">
+                <div class="h-6 bg-gray-700 rounded w-48 mb-4"></div>
+                <div class="h-4 bg-gray-700 rounded w-full mb-2"></div>
+                <div class="h-4 bg-gray-700 rounded w-full mb-2"></div>
+                <div class="h-4 bg-gray-700 rounded w-3/4 mb-6"></div>
+                
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+                    <div class="h-12 bg-gray-700 rounded"></div>
+                    <div class="h-12 bg-gray-700 rounded"></div>
+                    <div class="h-12 bg-gray-700 rounded"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Episodes Section -->
+        <div class="mb-16">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-bold">Episodes</h2>
+                <div class="flex space-x-2">
+                    <button id="filterAll" class="px-3 py-1 bg-gray-800 rounded-full text-sm active">All</button>
+                    <button id="filterSub" class="px-3 py-1 bg-gray-800 rounded-full text-sm">Sub</button>
+                    <button id="filterDub" class="px-3 py-1 bg-gray-800 rounded-full text-sm">Dub</button>
+                </div>
+            </div>
+            <div id="episodeList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Episode skeleton loader -->
+                <div class="episode-skeleton rounded h-24"></div>
+                <div class="episode-skeleton rounded h-24"></div>
+                <div class="episode-skeleton rounded h-24"></div>
+                <div class="episode-skeleton rounded h-24"></div>
+                <div class="episode-skeleton rounded h-24"></div>
+                <div class="episode-skeleton rounded h-24"></div>
+            </div>
+            
+            <!-- Load More Indicator -->
+            <div id="loadingMore" class="hidden mt-8 flex justify-center items-center">
+                <div class="w-10 h-10 border-4 border-red-600 border-t-transparent rounded-full animate-spin"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize animation libraries
+        gsap.registerPlugin(ScrollTrigger);
+        
+        const urlParams = new URLSearchParams(window.location.search);
+        const animeId = urlParams.get("id") || "naruto"; // Default to naruto if no ID provided
+        
+        // Episode loading state
+        let currentPage = 1;
+        let isLoading = false;
+        let hasMoreEpisodes = true;
+        let allEpisodes = [];
+        let activeFilter = 'all';
+
+        // Fetch anime details
+        fetch(`https://aniwatch-api-v1-0.onrender.com/api/related/${animeId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.infoX) {
+                    const animeInfo = data.infoX[0];
+                    const animeMeta = data.infoX[1];
+                    const characters = data.infoX[2]?.animechar || [];
+
+                    // Set document title
+                    document.title = `${animeInfo.name} - NetAnime`;
+
+                    // Set hero image with animation
+                    document.getElementById("animeHero").innerHTML = `
+                        <div class="absolute top-0 left-0 w-full h-full bg-cover bg-center" style="background-image: url('${animeInfo.image}')"></div>
+                        <div class="absolute top-0 left-0 w-full h-full hero-gradient"></div>
+                        <div class="absolute bottom-0 left-0 p-6 md:p-12 w-full md:w-2/3">
+                            <h1 class="text-4xl md:text-5xl font-bold mb-2 fade-in">${animeInfo.name}</h1>
+                            <p class="text-xl opacity-80 mb-4 fade-in">${animeInfo.jname}</p>
+                            <div class="flex items-center space-x-4 mb-4 fade-in">
+                                <span class="bg-red-600 px-2 py-1 text-sm rounded">${animeInfo.pganime}</span>
+                                <span>${animeInfo.duration}</span>
+                                <span class="flex items-center"><i class="fas fa-star text-yellow-400 mr-1"></i>${animeMeta.malscore}</span>
+                                <span class="px-2 py-1 bg-gray-700 rounded-full text-xs">${animeMeta.statusAnime}</span>
+                            </div>
+                            <div class="flex flex-wrap gap-2 mb-2 fade-in">
+                                ${animeInfo.epsub > 0 ? `<span class="badge badge-sub">SUB</span>` : ''}
+                                ${animeInfo.epdub > 0 ? `<span class="badge badge-dub">DUB</span>` : ''}
+                                ${animeInfo.quality.includes('HD') ? `<span class="badge badge-hd">HD</span>` : ''}
+                            </div>
+                            <div class="flex space-x-4 mb-6 fade-in">
+                                <button class="netflix-btn px-6 py-2 rounded flex items-center hover-scale">
+                                    <i class="fas fa-play mr-2"></i> Play
+                                </button>
+                                <button class="bg-gray-600 bg-opacity-70 px-6 py-2 rounded flex items-center hover:bg-gray-500 transition-colors">
+                                    <i class="fas fa-plus mr-2"></i> My List
+                                </button>
+                                <button class="bg-gray-600 bg-opacity-70 p-2 rounded-full hover:bg-gray-500 transition-colors">
+                                    <i class="fas fa-share-alt"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+
+                    // Animate hero elements
+                    const heroElements = document.querySelectorAll('#animeHero .fade-in');
+                    heroElements.forEach((el, index) => {
+                        setTimeout(() => {
+                            el.classList.add('visible');
+                        }, 300 * index);
+                    });
+
+                    // Set anime details with shortened description
+                    let descriptionShort = animeInfo.desc;
+                    let isDescriptionShortened = false;
+                    
+                    if (animeInfo.desc.length > 300) {
+                        descriptionShort = animeInfo.desc.substring(0, 300) + '...';
+                        isDescriptionShortened = true;
+                    }
+
+                    let animeHTML = `
+                        <div class="md:flex md:space-x-8">
+                            <div class="md:w-2/3">
+                                <h3 class="text-xl font-semibold mb-3 fade-in">Synopsis</h3>
+                                <div class="relative mb-6">
+                                    <p id="animeSynopsis" class="text-gray-300 ${isDescriptionShortened ? 'truncate-lines' : ''} fade-in">${descriptionShort}</p>
+                                    ${isDescriptionShortened ? `
+                                    <button id="readMoreBtn" class="text-red-500 mt-2 hover:text-red-400 transition-colors fade-in">Read more</button>
+                                    ` : ''}
+                                </div>
+                                
+                                <h3 class="text-xl font-semibold mb-3 fade-in">Details</h3>
+                                <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+                                    <div class="fade-in">
+                                        <p class="text-gray-400">Format</p>
+                                        <p>${animeInfo.format}</p>
+                                    </div>
+                                    <div class="fade-in">
+                                        <p class="text-gray-400">Quality</p>
+                                        <p>${animeInfo.quality}</p>
+                                    </div>
+                                    <div class="fade-in">
+                                        <p class="text-gray-400">Episodes</p>
+                                        <p>${animeInfo.epsub} Sub / ${animeInfo.epdub} Dub</p>
+                                    </div>
+                                    <div class="fade-in">
+                                        <p class="text-gray-400">Aired</p>
+                                        <p>${animeMeta.aired}</p>
+                                    </div>
+                                    <div class="fade-in">
+                                        <p class="text-gray-400">Premiered</p>
+                                        <p>${animeMeta.premired}</p>
+                                    </div>
+                                    <div class="fade-in">
+                                        <p class="text-gray-400">Studio</p>
+                                        <p>${animeMeta.studio}</p>
+                                    </div>
+                                </div>
+                                
+                                <h3 class="text-xl font-semibold mb-3 fade-in">Genres</h3>
+                                <div class="flex flex-wrap gap-2 mb-6 fade-in">
+                                    ${animeMeta.genre.map(g => `<a href="genre.html?genre=${encodeURIComponent(g)}" class="genre-tag px-3 py-1 rounded-full text-sm hover-scale">${g}</a>`).join('')}
+                                </div>
+                                
+                                <h3 class="text-xl font-semibold mb-3 fade-in">Producers</h3>
+                                <p class="text-gray-300 mb-6 fade-in">${animeMeta.producer.join(", ")}</p>
+                            </div>
+                            
+                            <div class="md:w-1/3">
+                                <h3 class="text-xl font-semibold mb-3 fade-in">Characters</h3>
+                                <div class="space-y-4">
+                                    ${characters.slice(0, 4).map((char, index) => `
+                                        <div class="flex bg-gray-800 bg-opacity-50 rounded overflow-hidden hover-scale cursor-pointer fade-in" style="transition-delay: ${index * 100}ms">
+                                            <img src="${char.animeImg}" alt="${char.name}" class="w-16 h-20 object-cover">
+                                            <div class="p-2">
+                                                <p class="font-semibold">${char.name}</p>
+                                                <p class="text-sm text-gray-400">${char.animedesignation}</p>
+                                                <div class="flex items-center mt-1">
+                                                    <img src="${char.voiceImageX}" alt="${char.voice}" class="w-6 h-6 rounded-full mr-2">
+                                                    <span class="text-xs">${char.voice} (${char.voicelang})</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                                ${characters.length > 4 ? `
+                                <button id="showMoreCharacters" class="w-full mt-4 py-2 bg-gray-800 rounded text-center hover:bg-gray-700 transition-colors fade-in">
+                                    Show ${characters.length - 4} more characters
+                                </button>
+                                ` : ''}
+                            </div>
+                        </div>
+                    `;
+
+                    document.getElementById("animeDetails").innerHTML = animeHTML;
+
+                    // Setup read more functionality
+                    const readMoreBtn = document.getElementById('readMoreBtn');
+                    if (readMoreBtn) {
+                        readMoreBtn.addEventListener('click', function() {
+                            const synopsis = document.getElementById('animeSynopsis');
+                            if (synopsis.classList.contains('truncate-lines')) {
+                                synopsis.classList.remove('truncate-lines');
+                                synopsis.textContent = animeInfo.desc;
+                                readMoreBtn.textContent = 'Show less';
+                            } else {
+                                synopsis.classList.add('truncate-lines');
+                                synopsis.textContent = descriptionShort;
+                                readMoreBtn.textContent = 'Read more';
+                            }
+                        });
+                    }
+
+                    // Setup show more characters functionality
+                    const showMoreCharactersBtn = document.getElementById('showMoreCharacters');
+                    if (showMoreCharactersBtn) {
+                        showMoreCharactersBtn.addEventListener('click', function() {
+                            const charactersContainer = this.previousElementSibling;
+                            let additionalCharactersHTML = '';
+                            
+                            characters.slice(4).forEach((char, index) => {
+                                additionalCharactersHTML += `
+                                    <div class="flex bg-gray-800 bg-opacity-50 rounded overflow-hidden hover-scale cursor-pointer fade-in" style="transition-delay: ${index * 100}ms">
+                                        <img src="${char.animeImg}" alt="${char.name}" class="w-16 h-20 object-cover">
+                                        <div class="p-2">
+                                            <p class="font-semibold">${char.name}</p>
+                                            <p class="text-sm text-gray-400">${char.animedesignation}</p>
+                                            <div class="flex items-center mt-1">
+                                                <img src="${char.voiceImageX}" alt="${char.voice}" class="w-6 h-6 rounded-full mr-2">
+                                                <span class="text-xs">${char.voice} (${char.voicelang})</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `;
+                            });
+                            
+                            charactersContainer.innerHTML += additionalCharactersHTML;
+                            this.remove();
+                            
+                            // Animate new character elements
+                            const newCharElements = document.querySelectorAll('#animeDetails .fade-in:not(.visible)');
+                            newCharElements.forEach((el, index) => {
+                                setTimeout(() => {
+                                    el.classList.add('visible');
+                                }, 100 * index);
+                            });
+                        });
+                    }
+
+                    // Animate all fade-in elements
+                    const fadeElements = document.querySelectorAll('#animeDetails .fade-in');
+                    fadeElements.forEach((el, index) => {
+                        setTimeout(() => {
+                            el.classList.add('visible');
+                        }, 100 * index);
+                    });
+
+                } else {
+                    document.getElementById("animeDetails").innerHTML = '<div class="bg-gray-800 p-6 rounded">Anime details not found. Please try another title.</div>';
+                }
+            })
+            .catch(error => {
+                console.error("Error fetching anime details:", error);
+                document.getElementById("animeDetails").innerHTML = '<div class="bg-gray-800 p-6 rounded">Failed to load anime details. Please try again later.</div>';
+            });
+
+        // Fetch and render episodes with infinite scroll
+        function fetchEpisodes() {
+            if (isLoading || !hasMoreEpisodes) return;
+            
+            isLoading = true;
+            document.getElementById('loadingMore').classList.remove('hidden');
+            
+            fetch(`https://aniwatch-api-v1-0.onrender.com/api/episode/${animeId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.episodetown && data.episodetown.length > 0) {
+                        // Store all episodes for filtering
+                        allEpisodes = data.episodetown;
+                        
+                        // Clear skeleton loaders
+                        if (currentPage === 1) {
+                            document.getElementById("episodeList").innerHTML = '';
+                        }
+                        
+                        // Display first batch of episodes
+                        renderEpisodes();
+                        
+                    } else {
+                        document.getElementById("episodeList").innerHTML = '<div class="col-span-full bg-gray-800 p-6 rounded">No episodes found for this anime.</div>';
+                        hasMoreEpisodes = false;
+                    }
+                    
+                    isLoading = false;
+                    document.getElementById('loadingMore').classList.add('hidden');
+                })
+                .catch(error => {
+                    console.error("Error fetching anime episodes:", error);
+                    document.getElementById("episodeList").innerHTML = '<div class="col-span-full bg-gray-800 p-6 rounded">Failed to load episodes. Please try again later.</div>';
+                    isLoading = false;
+                    document.getElementById('loadingMore').classList.add('hidden');
+                });
+        }
+        
+        // Render episodes based on current page and filter
+        function renderEpisodes() {
+            const episodesContainer = document.getElementById("episodeList");
+            const episodesPerPage = 12;
+            let filteredEpisodes = allEpisodes;
+            
+            // Apply filter
+            if (activeFilter === 'sub') {
+                filteredEpisodes = allEpisodes.filter(ep => !ep.name.toLowerCase().includes('dub'));
+            } else if (activeFilter === 'dub') {
+                filteredEpisodes = allEpisodes.filter(ep => ep.name.toLowerCase().includes('dub'));
+            }
+            
+            // Calculate slice of episodes to show
+            const startIndex = 0;
+            const endIndex = currentPage * episodesPerPage;
+            const displayEpisodes = filteredEpisodes.slice(startIndex, endIndex);
+            
+            // Check if we've reached the end
+            hasMoreEpisodes = endIndex < filteredEpisodes.length;
+            
+            // Clear container if this is a filter change
+            if (currentPage === 1) {
+                episodesContainer.innerHTML = '';
+            }
+            
+            // Generate episode cards
+            let episodeHTML = '';
+            displayEpisodes.forEach((episode, index) => {
+                const isDub = episode.name.toLowerCase().includes('dub');
+                const episodeNumber = episode.order || index + 1;
+                
+                episodeHTML += `
+                    <a href="episode.html?id=${episode.epId}" class="episode-card rounded overflow-hidden fade-in" style="transition-delay: ${(index % 12) * 50}ms">
+                        <div class="p-4">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-lg font-medium">Episode ${episodeNumber}</span>
+                                <div class="flex items-center space-x-2">
+                                    <span class="badge ${isDub ? 'badge-dub' : 'badge-sub'}">${isDub ? 'DUB' : 'SUB'}</span>
+                                    <span class="badge badge-hd">HD</span>
+                                    <span class="text-gray-400 text-sm">${episode.duration || '24m'}</span>
+                                </div>
+                            </div>
+                            <p class="text-gray-300 text-sm truncate">${episode.name}</p>
+                        </div>
+                    </a>
+                `;
+            });
+            
+            // Append new episodes
+            episodesContainer.innerHTML += episodeHTML;
+            
+            // Animate new episode cards
+            const newEpisodeCards = document.querySelectorAll('#episodeList .fade-in:not(.visible)');
+            newEpisodeCards.forEach((el, index) => {
+                setTimeout(() => {
+                    el.classList.add('visible');
+                }, 50 * index);
+            });
+        }
+        
+        // Initial episode fetch
+        fetchEpisodes();
+        
+        // Setup infinite scroll
+        window.addEventListener('scroll', () => {
+            const { scrollTop, scrollHeight, clientHeight } = document.documentElement;
+            
+            // Show/hide scroll to top button
+            if (scrollTop > 500) {
+                document.getElementById('scrollToTop').classList.add('visible');
+            } else {
+                document.getElementById('scrollToTop').classList.remove('visible');
+            }
+            
+            // Load more episodes when near bottom
+            if (scrollTop + clientHeight >= scrollHeight - 300 && !isLoading && hasMoreEpisodes) {
+                currentPage++;
+                renderEpisodes();
+            }
+        });
+        
+        // Scroll to top button
+        document.getElementById('scrollToTop').addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+        
+        // Setup filter buttons
+        document.getElementById('filterAll').addEventListener('click', () => {
+            setActiveFilter('all');
+        });
+        
+        document.getElementById('filterSub').addEventListener('click', () => {
+            setActiveFilter('sub');
+        });
+        
+        document.getElementById('filterDub').addEventListener('click', () => {
+            setActiveFilter('dub');
+        });
+        
+        function setActiveFilter(filter) {
+            // Update active button styling
+            document.querySelectorAll('#filterAll, #filterSub, #filterDub').forEach(btn => {
+                btn.classList.remove('bg-red-600');
+                btn.classList.add('bg-gray-800');
+            });
+            document.getElementById(`filter${filter.charAt(0).toUpperCase() + filter.slice(1)}`).classList.add('bg-red-600');
+            document.getElementById(`filter${filter.charAt(0).toUpperCase() + filter.slice(1)}`).classList.remove('bg-gray-800');
+            
+            // Apply filter
+            activeFilter = filter;
+            currentPage = 1;
+            renderEpisodes();
+        }
+
+        // Add scroll effect to navbar
+        window.addEventListener('scroll', function() {
+            const navbar = document.querySelector('.navbar');
+            if (window.scrollY > 50) {
+                navbar.style.backgroundColor = '#141414';
+                navbar.classList.remove('py-3');
+                navbar.classList.add('py-2');
+            } else {
+                navbar.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+                navbar.classList.add('py-3');
+                navbar.classList.remove('py-2');
+            }
+        });
+        
+        // GSAP animations for scrolling elements
+        gsap.utils.toArray('.fade-in').forEach(element => {
+            gsap.fromTo(element, 
+                { y: 20, opacity: 0 }, 
+                {
+                    y: 0,
+                    opacity: 1,
+                    duration: 0.6,
+                    ease: "power2.out",
+                    scrollTrigger: {
+                        trigger: element,
+                        start: "top 85%",
+                        toggleActions: "play none none none"
+                    }
+                }
+            );
+        });
+    </script>
+</body>
+</html>
