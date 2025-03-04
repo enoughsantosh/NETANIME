@@ -12,7 +12,7 @@
             theme: {
                 extend: {
                     colors: {
-                        netred: '',
+                        netred: '#E50914',
                     },
                     animation: {
                         'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
@@ -165,9 +165,9 @@
                             <div class="text-sm text-gray-500 dark:text-gray-400" id="episode-count"></div>
                         </div>
                         
-                        <div id="episodes-container" class=" rounded-lg">
-                            <ul id="episode-list" class="divide-y divide-gray-200 dark:divide-gray-700"></ul>
-                        </div>
+<div id="episodes-container" class="bg-gray-50 dark:bg-gray-850 rounded-lg">
+    <ul id="episode-list" class="divide-y divide-gray-200 dark:divide-gray-700"></ul>
+</div>
                     </div>
                 </div>
             </div>
@@ -208,10 +208,13 @@ function initNavbar() {
     
     // Handle search toggle
     const searchToggle = document.getElementById('searchToggle');
-
-searchToggle.addEventListener('click', () => {
-    window.location.href = "index.html";
-});
+    const searchBar = document.getElementById('searchBar');
+    
+    searchToggle.addEventListener('click', () => {
+        searchBar.classList.toggle('hidden');
+        searchBar.classList.toggle('md:hidden');
+    });
+}
 
 // Parse URL parameters
 const urlParams = new URLSearchParams(window.location.search);
