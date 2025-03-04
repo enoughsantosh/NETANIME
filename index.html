@@ -121,6 +121,12 @@
            
                 </ul>
             </div>
+                        <div class="relative">
+    <select id="languageSelect" class="bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white py-2 px-3 rounded-md border dark:border-gray-600 focus:outline-none">
+        <option value="original">Original</option>
+        <option value="hindi">Hindi</option>
+    </select>
+</div>
             
             <div class="flex items-center space-x-4">
                 <!-- Dark Mode Toggle -->
@@ -798,6 +804,20 @@ function displayFallbackData() {
     displayAnime(getFallbackAnimeData('trending'), "trending", true);
     displayAnime(getFallbackAnimeData('upcoming'), "upcoming", false, true);
 }
+
+        document.getElementById('languageSelect').addEventListener('change', function() {
+            const selectedLanguage = this.value;
+            
+            // Handle language selection
+            switch (selectedLanguage) {
+                case 'hindi':
+                    window.location.href = 'hindi.html';
+                    break;
+
+                default:
+                    window.location.href = 'index.html';
+            }
+        });
 
 </script>
 </body>
