@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NETANIME - Anime Streaming</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/plyr/3.7.8/plyr.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/plyr/3.7.8/plyr.min.css">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' fill='%23E50914'%3E%3Cpath d='M50 10 L90 50 L50 90 L10 50 Z'/%3E%3C/svg%3E">
+    <script>
+        // Tailwind CSS configuration for custom colors
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'netflix-black': '#141414',
+                        'netflix-gray': '#1f1f1f',
+                        'netflix-red': '#E50914',
+                        'netflix-dark-gray': '#0f0f0f'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1f1f1f;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 6px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #E50914;
+        }
+        /* Plyr customizations */
+        .plyr {
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
+        .plyr__video-wrapper {
+            background: #000;
+        }
+        /* Hover and active states for buttons */
+        .server-item {
+            transition: all 0.3s ease;
+        }
+        .server-item:hover {
+            transform: scale(1.03);
+            background-color: rgba(229, 9, 20, 0.1);
+            border-left: 4px solid #E50914;
+        }
+    </style>
+</head>
+<body class="bg-netflix-black text-white min-h-screen flex flex-col">
+    <!-- Navigation -->
+    <nav class="bg-netflix-gray p-4 shadow-lg sticky top-0 z-50">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center space-x-6">
+                <h1 class="text-3xl font-bold text-netflix-red">NETANIME</h1>
+                <div class="flex items-center space-x-4">
+                    <div id="episode-info" class="text-gray-300 text-sm"></div>
+                </div>
+            </div>
+            <!-- Search and User Icons -->
+            <div class="flex items-center space-x-4">
+                <button id="search-btn" class="text-white hover:text-netflix-red transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                </button>
+                            <div class="w-8 h-8 bg-blue-500 rounded cursor-pointer hover-scale"></div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mx-auto px-4 py-8 flex-grow">
+        <div class="grid md:grid-cols-3 gap-6">
+            <!-- Video Player -->
+            <div class="md:col-span-2">
+                <div id="video-container" class="bg-netflix-gray rounded-lg p-6 mb-6 hidden">
+                    <div id="video-player-wrapper" class="shadow-2xl">
+                        <video id="video-player" controls crossorigin playsinline></video>
+                    </div>
+                    <div id="episode-details" class="mt-4 flex justify-between items-center">
+                        <div>
+                            <h2 id="episode-title" class="text-2xl font-bold"></h2>
+                            <p id="episode-description" class="text-gray-400 mt-2"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Episodes Column -->
+<!-- Episodes Column -->
+<div class="md:col-span-1 bg-netflix-gray rounded-lg p-6 h-fit">
+    <h2 class="text-xl font-bold mb-4">Anime Episode</h2>
+
+    <!-- Sub/Dub Servers Container -->
+    <div id="server-container" class="space-y-4 max-h-96 overflow-y-auto">
+        <p class="text-gray-400">Select Dub/Sub to load servers.</p>
+    </div>
+
+    <!-- Video Qualities Container -->
+    <div id="quality-container" class="space-y-4 max-h-96 overflow-y-auto mt-4 hidden">
+        <h3 class="text-lg font-semibold mb-2 text-gray-300">Video Qualities</h3>
+    </div>
+</div>
+        </div>
+    </div>
+
+    <script>
+        let player = null;
+        let hls = null;
+        let currentEpisodeId = null;
+
+        // Parse URL query parameters
+        function getQueryParam(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+
+        // Initialize page with query parameter
+        document.addEventListener('DOMContentLoaded', () => {
+            currentEpisodeId = getQueryParam('epId');
+            if (currentEpisodeId) {
+                loadServers('sub');
+                loadServers('dub');
+            }
+        });
+
+        async function loadServers(type) {
+            const url = `https://cors.karankingrider.workers.dev/?url=https://aniwa.vercel.app/api/v2/hianime/episode/servers?animeEpisodeId=${currentEpisodeId}`;
+            
+            try {
+                const response = await fetch(url);
+                const result = await response.json();
+
+                if (result.success) {
+                    displayServers(result.data[type], type);
+                } else {
+                    alert("Failed to load servers.");
+                }
+            } catch (error) {
+                console.error("Error fetching servers:", error);
+                alert("Error loading servers.");
+            }
+        }
+
+
+        async function loadAnimeEpisode(episodeId, type, serverId) {
+            const url = `https://cors.karankingrider.workers.dev/?url=https://aniwa.vercel.app/api/v2/hianime/episode/sources?animeEpisodeId=${episodeId}?server=${serverId}`;
+            
+            try {
+                const response = await fetch(url);
+                const result = await response.json();
+
+                if (result.success) {
+                    displayEpisode(result.data);
+                } else {
+                    
+                }
+            } catch (error) {
+                console.error("Error fetching episode:", error);
+                
+            }
+        }
+
+function displayServers(servers, type) {
+    const serverContainer = document.getElementById('server-container');
+    const serverTitle = document.createElement('h3');
+    serverTitle.className = 'text-lg font-semibold mb-2 text-gray-300';
+    serverTitle.textContent = type === 'sub' ? 'Sub Servers' : 'Dub Servers';
+    serverContainer.appendChild(serverTitle);
+
+    if (servers.length === 0) {
+        serverContainer.innerHTML = '<p class="text-gray-400">No servers available.</p>';
+        return;
+    }
+
+    servers.forEach(server => {
+        const serverItem = document.createElement('div');
+        serverItem.className = `server-item bg-black bg-opacity-50 p-3 rounded-md cursor-pointer 
+            hover:bg-opacity-70 transition flex justify-between items-center mb-2`;
+        
+        serverItem.innerHTML = `
+            <div class="flex items-center space-x-3">
+                <span class="text-netflix-red">•</span>
+                <span>${server.serverName}</span>
+            </div>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+        `;
+
+        serverItem.addEventListener('click', () => {
+            loadAnimeEpisode(currentEpisodeId, type, server.serverId);
+        });
+
+        serverContainer.appendChild(serverItem);
+    });
+}
+
+function displayEpisode(data) {
+    const videoContainer = document.getElementById('video-container');
+    const videoPlayer = document.getElementById('video-player');
+    const qualityContainer = document.getElementById('quality-container');
+    const episodeInfoEl = document.getElementById('episode-info');
+
+    // Show video section
+    videoContainer.classList.remove('hidden');
+    qualityContainer.classList.remove('hidden');
+
+    // Destroy existing HLS instance
+    if (hls) {
+        hls.destroy();
+    }
+
+    // Extract source URL (assuming first source is the m3u8)
+    const sourceUrl = data.sources[0].url;
+
+    // Prepare quality container
+    qualityContainer.innerHTML = '<h3 class="text-lg font-semibold mb-2 text-gray-300">Video Qualities</h3>';
+
+    // Initialize HLS
+    if (Hls.isSupported()) {
+        hls = new Hls({
+            maxBufferLength: 30,
+            maxMaxBufferLength: 60,
+            maxBufferSize: 60 * 1000 * 1000,
+        });
+        hls.loadSource(sourceUrl);
+
+        // Extract qualities
+        hls.on(Hls.Events.MANIFEST_PARSED, function (event, data) {
+            const levels = hls.levels;
+
+            // Add auto quality option
+            const autoQualityItem = document.createElement('div');
+            autoQualityItem.className = `server-item bg-black bg-opacity-50 p-3 rounded-md cursor-pointer 
+                hover:bg-opacity-70 transition flex justify-between items-center mb-2`;
+            autoQualityItem.innerHTML = `
+                <div>
+                    <span>Auto</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-netflix-red" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+            `;
+            autoQualityItem.addEventListener('click', () => {
+                hls.currentLevel = -1; // Auto quality
+            });
+            qualityContainer.appendChild(autoQualityItem);
+
+            // Add quality options
+            levels.forEach((level, index) => {
+                const qualityItem = document.createElement('div');
+                qualityItem.className = `server-item bg-black bg-opacity-50 p-3 rounded-md cursor-pointer 
+                    hover:bg-opacity-70 transition flex justify-between items-center mb-2`;
+
+                const resolutionText = `${level.width}x${level.height}`;
+                qualityItem.innerHTML = `
+                    <div>
+                        <span>${resolutionText}</span>
+                        <span class="text-sm text-gray-400 ml-2">
+                            ${Math.round(level.bitrate / 1000)} Kbps
+                        </span>
+                    </div>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-netflix-red" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                `;
+
+                qualityItem.addEventListener('click', () => {
+                    hls.currentLevel = index;
+                });
+
+                qualityContainer.appendChild(qualityItem);
+            });
+
+            // Bind HLS to video player
+            hls.attachMedia(videoPlayer);
+
+            // Auto-play the video
+            videoPlayer.play();
+        });
+
+        // Handle HLS errors
+        hls.on(Hls.Events.ERROR, function (event, data) {
+            console.error('HLS Error:', data);
+            if (data.fatal) {
+                switch (data.type) {
+                    case Hls.ErrorTypes.NETWORK_ERROR:
+                        console.error('Fatal network error encountered, try to recover');
+                        hls.startLoad();
+                        break;
+                    case Hls.ErrorTypes.MEDIA_ERROR:
+                        console.error('Fatal media error encountered, try to recover');
+                        hls.recoverMediaError();
+                        break;
+                    default:
+                        console.error('Cannot recover, destroying HLS instance');
+                        hls.destroy();
+                        break;
+                }
+            }
+        });
+    } else if (videoPlayer.canPlayType('application/vnd.apple.mpegurl')) {
+        // For Safari without HLS.js
+        videoPlayer.src = sourceUrl;
+        videoPlayer.addEventListener('loadedmetadata', () => {
+            videoPlayer.play();
+        });
+    }
+
+    // Add subtitle tracks
+    const subtitleTracks = data.tracks.filter(track => track.kind === "captions");
+    subtitleTracks.forEach(track => {
+        const trackEl = document.createElement('track');
+        trackEl.kind = 'captions';
+        trackEl.label = track.label;
+        trackEl.srclang = track.language || 'en';
+        trackEl.src = track.file;
+        videoPlayer.appendChild(trackEl);
+    });
+}
+    </script>
+
+    <!-- Footer -->
+    <footer class="bg-netflix-gray p-4 text-center text-gray-400">
+        <p>&copy; 2024 NETANIME. All rights reserved.</p>
+    </footer>
+</body>
+</html>
