@@ -209,14 +209,10 @@ function initNavbar() {
     
     // Handle search toggle
     const searchToggle = document.getElementById('searchToggle');
-    const searchBar = document.getElementById('searchBar');
-    
-    searchToggle.addEventListener('click', () => {
-        searchBar.classList.toggle('hidden');
-        searchBar.classList.toggle('md:hidden');
-    });
-}
 
+searchToggle.addEventListener('click', () => {
+    window.location.href = "index.html";
+});
 // Parse URL parameters
 const urlParams = new URLSearchParams(window.location.search);
 const animeId = urlParams.get('id');
