@@ -5,13 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Netanime - Anime Details</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.js"></script>
-        <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
             theme: {
                 extend: {
-                    colors: {
+                                        colors: {
                         netred: '#E50914',
                     },
                     animation: {
@@ -53,7 +53,7 @@
     <nav id="navbar" class="fixed w-full z-50 transition-all duration-300">
         <div class="flex items-center justify-between py-4 px-4 md:px-6 lg:px-12">
             <div class="flex items-center">
-                <div><a href="index.html" class="text-netred font-bold text-2xl md:text-3xl">NETANIME</div>
+                <div><a href="index.html" class="text-red-500 font-bold text-2xl md:text-3xl">NETANIME</a></div>
                 <ul class="hidden md:flex space-x-6 ml-10">
 
                 </ul>
@@ -85,89 +85,89 @@
                 </div>
                 
                 <!-- Profile Avatar -->
-                                          <div class="w-8 h-8 bg-blue-500 rounded cursor-pointer hover-scale"></div>
+                <div class="w-8 h-8 bg-blue-500 rounded cursor-pointer hover-scale"></div>
             </div>
         </div>
     </nav>
 
     <!-- Main Content with spacing for fixed navbar -->
-<div id="anime-banner" class="relative h-48 md:h-64 bg-gray-300 dark:bg-black-700 overflow-hidden" 
-     style="background-image: url('your-image-url.jpg'); background-size: cover; background-position: center;">
-    <!-- Blurred Overlay -->
-    <div class="absolute inset-0 backdrop-blur-lg"></div>
-    <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-    <div class="absolute bottom-0 left-0 p-4 md:p-6 flex items-end">
-        <h1 class="text-3xl md:text-4xl font-bold text-white drop-shadow-lg" id="anime-title">Loading...</h1>
-    </div>
-</div>
+    <div class="pt-16"> <!-- Added padding top for fixed navbar -->
+        <div id="anime-banner" class="relative h-48 md:h-64 bg-gray-300 dark:bg-black-700 overflow-hidden" 
+            style="background-image: url('your-image-url.jpg'); background-size: cover; background-position: center;">
+            <!-- Blurred Overlay -->
+            <div class="absolute inset-0 backdrop-blur-lg"></div>
+            <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+            <div class="absolute bottom-0 left-0 p-4 md:p-6 flex items-end">
+                <h1 class="text-3xl md:text-4xl font-bold text-white drop-shadow-lg" id="anime-title">Loading...</h1>
+            </div>
+        </div>
             
-            <div class="flex flex-col md:flex-row">
-                <!-- Left Column - Image and Quick Facts -->
-                <div class="md:w-1/3 p-4">
-                    <div class="relative rounded-lg overflow-hidden mb-4 shadow-md">
-                        <div id="image-skeleton" class="absolute inset-0 skeleton"></div>
-                        <img id="anime-image" src="" alt="Anime Cover" class="w-full object-cover opacity-0 transition-opacity duration-300" onload="this.style.opacity='1'; document.getElementById('image-skeleton').style.display='none';">
-                    </div>
-                    
-                    <div class="bg-gray-100 dark:bg-gray-700 rounded-lg p-4 space-y-2">
-                        <div class="flex justify-between">
-                            <span class="text-gray-600 dark:text-gray-300">Status:</span>
-                            <span id="status" class="font-medium"></span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-gray-600 dark:text-gray-300">Score:</span>
-                            <span id="score" class="font-medium"></span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-gray-600 dark:text-gray-300">Aired:</span>
-                            <span id="aired" class="font-medium"></span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-gray-600 dark:text-gray-300">Premiered:</span>
-                            <span id="premiered" class="font-medium"></span>
-                        </div>
-                    </div>
-                    
-                    <h3 class="font-semibold mt-4 mb-2">Japanese Title</h3>
-                    <p id="japanese-title" class="text-gray-700 dark:text-gray-300"></p>
-                    
-                    <h3 class="font-semibold mt-4 mb-2">Studios</h3>
-                    <p id="studio" class="text-gray-700 dark:text-gray-300"></p>
-                    
-                    <h3 class="font-semibold mt-4 mb-2">Producers</h3>
-                    <p id="producers" class="text-gray-700 dark:text-gray-300"></p>
+        <div class="flex flex-col md:flex-row">
+            <!-- Left Column - Image and Quick Facts -->
+            <div class="md:w-1/3 p-4">
+                <div class="relative rounded-lg overflow-hidden mb-4 shadow-md">
+                    <div id="image-skeleton" class="absolute inset-0 skeleton"></div>
+                    <img id="anime-image" src="" alt="Anime Cover" class="w-full object-cover opacity-0 transition-opacity duration-300" onload="this.style.opacity='1'; document.getElementById('image-skeleton').style.display='none';">
                 </div>
                 
-                <!-- Right Column - Details -->
-                <div class="md:w-2/3 p-4">
-                    <!-- Genres -->
-                    <div class="mb-6">
-                        <h2 class="text-xl font-semibold mb-3">Genres</h2>
-                        <div id="genres" class="flex flex-wrap gap-2"></div>
+                <div class="bg-gray-100 dark:bg-gray-700 rounded-lg p-4 space-y-2">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600 dark:text-gray-300">Status:</span>
+                        <span id="status" class="font-medium"></span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600 dark:text-gray-300">Score:</span>
+                        <span id="score" class="font-medium"></span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600 dark:text-gray-300">Aired:</span>
+                        <span id="aired" class="font-medium"></span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600 dark:text-gray-300">Premiered:</span>
+                        <span id="premiered" class="font-medium"></span>
+                    </div>
+                </div>
+                
+                <h3 class="font-semibold mt-4 mb-2">Japanese Title</h3>
+                <p id="japanese-title" class="text-gray-700 dark:text-gray-300"></p>
+                
+                <h3 class="font-semibold mt-4 mb-2">Studios</h3>
+                <p id="studio" class="text-gray-700 dark:text-gray-300"></p>
+                
+                <h3 class="font-semibold mt-4 mb-2">Producers</h3>
+                <p id="producers" class="text-gray-700 dark:text-gray-300"></p>
+            </div>
+            
+            <!-- Right Column - Details -->
+            <div class="md:w-2/3 p-4">
+                <!-- Genres -->
+                <div class="mb-6">
+                    <h2 class="text-xl font-semibold mb-3">Genres</h2>
+                    <div id="genres" class="flex flex-wrap gap-2"></div>
+                </div>
+                
+                <!-- Description -->
+                <div class="mb-6">
+                    <h2 class="text-xl font-semibold mb-3">Synopsis</h2>
+                    <div class="relative">
+                        <p id="description" class="text-gray-700 dark:text-gray-300 transition-all duration-300 truncate-description"></p>
+                        <button id="read-more" class="text-blue-500 hover:text-blue-700 mt-2 cursor-pointer font-medium">Read More</button>
+                    </div>
+                </div>
+                
+                <!-- Episodes -->
+                <div>
+                    <h2 class="text-xl font-semibold mb-3">Episodes</h2>
+                    <div class="flex justify-between items-center mb-4">
+                        <select id="season-select" class="p-2 border border-gray-600 dark:border-gray-600 rounded bg-gray dark:bg-gray-700">
+                            <option value="">Loading seasons...</option>
+                        </select>
+                        <div class="text-sm text-gray-500 dark:text-gray-400" id="episode-count"></div>
                     </div>
                     
-                    <!-- Description -->
-                    <div class="mb-6">
-                        <h2 class="text-xl font-semibold mb-3">Synopsis</h2>
-                        <div class="relative">
-                            <p id="description" class="text-gray-700 dark:text-gray-300 transition-all duration-300 truncate-description"></p>
-                            <button id="read-more" class="text-netred hover:text-red-700 mt-2 cursor-pointer font-medium">Read More</button>
-                        </div>
-                    </div>
-                    
-                    <!-- Episodes -->
-                    <div>
-                        <h2 class="text-xl font-semibold mb-3">Episodes</h2>
-                        <div class="flex justify-between items-center mb-4">
-                            <select id="season-select" class="p-2 border border-gray-600 dark:border-gray-600 rounded bg-gray dark:bg-gray-700">
-                                <option value="">Loading seasons...</option>
-                            </select>
-                            <div class="text-sm text-gray-500 dark:text-gray-400" id="episode-count"></div>
-                        </div>
-                        
-<div id="episodes-container" class="bg-gray-50 dark:bg-gray-850 rounded-lg">
-    <ul id="episode-list" class="divide-y divide-gray-200 dark:divide-gray-700"></ul>
-</div>
+                    <div id="episodes-container" class="bg-gray-50 dark:bg-gray-850 rounded-lg">
+                        <ul id="episode-list" class="divide-y divide-gray-200 dark:divide-gray-700"></ul>
                     </div>
                 </div>
             </div>
@@ -175,6 +175,7 @@
     </div>
 
     <script>
+
 // Dark Mode Toggle
 function initDarkMode() {
     const darkModeToggle = document.getElementById('darkModeToggle');
@@ -355,9 +356,9 @@ function displayEpisodes(season) {
 
     seasonEpisodes.forEach(ep => {
         let li = document.createElement('li');
-        li.classList.add('p-3', 'hover:bg-gray-100', 'dark:hover:bg-gray-700', 'cursor-pointer', 'transition-colors');
+        li.classList.add('p-3', 'hover:bg-gray-100', 'dark:hover:bg-gray-700', 'cursor-pointer','dark:bg-gray-700' ,'transition-colors');
         li.innerHTML = `
-            <div class="flex justify-between items-center">
+            <div class="flex justify-between items-center ">
                 <div>
                     <span class="font-medium">Episode ${ep.order}:</span> 
                     <span class="ml-1">${ep.name}</span>
