@@ -215,150 +215,142 @@
         </div>
     </div>
 
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const params = new URLSearchParams(window.location.search);
-            const url = params.get("id");
-            const loadingEl = document.getElementById("loading");
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const params = new URLSearchParams(window.location.search);
+        const url = params.get("id");
+        const loadingEl = document.getElementById("loading");
 
-            // Helper function to create blur-loaded images
-            function createBlurLoadImage(src, alt) {
-                const container = document.createElement('div');
-                container.className = 'blur-load w-full h-full';
-                
-                const img = document.createElement('img');
-                img.src = src;
-                img.alt = alt;
-                img.className = 'w-full h-full object-cover';
-                
-                img.onload = () => {
-                    container.classList.add('loaded');
-                };
-                
-                container.appendChild(img);
-                return container;
-            }
+        if (url) {
+            fetch(`https://aniscrap.vercel.app/anime/detailss?url=${encodeURIComponent(url)}`)
+                .then(res => {
+                    if (!res.ok) throw new Error('Network response was not ok');
+                    return res.json();
+                })
+                .then(data => {
+                    // Hide loading state
+                    loadingEl.classList.add('hidden');
 
-            if (url) {
-                fetch(`https://aniscrap.vercel.app/anime/detailss?url=${encodeURIComponent(url)}`)
-                    .then(res => {
-                        if (!res.ok) throw new Error('Network response was not ok');
-                        return res.json();
-                    })
-                    .then(data => {
-                        // Hide loading state
-                        loadingEl.classList.add('hidden');
+                    // Update hero section
+                    document.getElementById("anime-title").textContent = data.title;
+                    const heroImage = document.getElementById("hero-image");
+                    heroImage.style.backgroundImage = `url(${data.thumbnail})`;
+                    heroImage.classList.add('scale-100');
 
-                        // Update hero section
-                        document.getElementById("anime-title").textContent = data.title;
-                        const heroImage = document.getElementById("hero-image");
-                        heroImage.style.backgroundImage = `url(${data.thumbnail})`;
-                        heroImage.classList.add('scale-100');
-                        
-                        document.getElementById("anime-description").textContent = data.description;
-                        document.getElementById("anime-rating").querySelector('span').textContent = data.rating;
-                        document.getElementById("anime-genres").innerHTML = data.genres.map(genre => 
-                            `<span class="inline-block bg-gray-800 px-3 py-1 rounded-full text-sm">${genre}</span>`
-                        ).join(' ');
+                    document.getElementById("anime-description").textContent = data.description;
+                    document.getElementById("anime-rating").querySelector('span').textContent = data.rating;
+                    document.getElementById("anime-genres").innerHTML = data.genres.map(genre =>
+                        `<span class="inline-block bg-gray-800 px-3 py-1 rounded-full text-sm">${genre}</span>`
+                    ).join(' ');
 
-                        // Update episode count
-                        document.getElementById("episode-count").textContent = `${data.episodes.length} Episodes Available`;
+                    // Update episode count
+                    document.getElementById("episode-count").textContent = 
+                        data.episodes.length > 0 ? `${data.episodes.length} Episodes Available` : "No Episodes Available";
 
-                        // Update page title
-                        document.title = `${data.title} - AnimeHub`;
+                    // Update page title
+                    document.title = `${data.title} - Netanime`;
 
-                        // Populate season dropdown
-                        const seasonSelect = document.getElementById("season-select");
-                        seasonSelect.innerHTML = '<option value="all">All Seasons</option>';
-                        for (let i = 1; i <= data.total_seasons; i++) {
-                            const option = document.createElement("option");
-                            option.value = i;
-                            option.textContent = `Season ${i}`;
-                            seasonSelect.appendChild(option);
+                    // Populate season dropdown
+                    const seasonSelect = document.getElementById("season-select");
+                    seasonSelect.innerHTML = '<option value="all">All Seasons</option>';
+                    for (let i = 1; i <= data.total_seasons; i++) {
+                        const option = document.createElement("option");
+                        option.value = i;
+                        option.textContent = `Season ${i}`;
+                        seasonSelect.appendChild(option);
+                    }
+
+                    // Function to render episodes
+                    const renderEpisodes = (episodes) => {
+                        const episodesDiv = document.getElementById("episodes");
+                        episodesDiv.innerHTML = "";
+
+                        if (episodes.length === 0) {
+                            episodesDiv.innerHTML = `<p class="text-gray-400">No episodes available.</p>`;
+                            return;
                         }
 
-                        // Function to render episodes
-                        const renderEpisodes = (episodes) => {
-                            const episodesDiv = document.getElementById("episodes");
-                            episodesDiv.innerHTML = "";
-                            
-                            episodes.forEach((ep, index) => {
-                                const episodeDiv = document.createElement("div");
-                                episodeDiv.className = "episode-card group cursor-pointer";
-                                episodeDiv.innerHTML = `
-                                    <div class="relative aspect-video overflow-hidden">
-                                        <img 
-                                            src="${ep.thumbnail || ep.image}" 
-                                            alt="${ep.title}"
-                                            class="w-full h-full object-cover transform transition-transform duration-500 group-hover:scale-110"
-                                            onerror="this.src='/api/placeholder/640/360'"
-                                        />
-                                        <div class="episode-overlay">
-                                            <div class="flex items-center justify-between mb-2">
-                                                <span class="text-sm font-medium">Episode ${index + 1}</span>
-                                                <span class="bg-red-500/20 text-red-400 px-2 py-1 rounded text-xs">HD</span>
-                                            </div>
-                                            <h3 class="font-medium text-lg mb-2">${ep.title}</h3>
-                                            <button class="flex items-center space-x-2 bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg text-white font-medium smooth-transition">
-                                                <i class="fas fa-play text-sm"></i>
-                                                <span>Play Episode</span>
-                                            </button>
+                        episodes.forEach((ep, index) => {
+                            const episodeDiv = document.createElement("div");
+                            episodeDiv.className = "episode-card group cursor-pointer";
+                            episodeDiv.innerHTML = `
+                                <div class="relative aspect-video overflow-hidden">
+                                    <img 
+                                        src="${ep.thumbnail || ep.image}" 
+                                        alt="${ep.title}"
+                                        class="w-full h-full object-cover transform transition-transform duration-500 group-hover:scale-110"
+                                        onerror="this.src='/api/placeholder/640/360'"
+                                    />
+                                    <div class="episode-overlay">
+                                        <div class="flex items-center justify-between mb-2">
+                                            <span class="text-sm font-medium">Episode ${index + 1}</span>
+                                            <span class="bg-red-500/20 text-red-400 px-2 py-1 rounded text-xs">HD</span>
                                         </div>
+                                        <h3 class="font-medium text-lg mb-2">${ep.title}</h3>
+                                        <button class="flex items-center space-x-2 bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg text-white font-medium smooth-transition">
+                                            <i class="fas fa-play text-sm"></i>
+                                            <span>Play Episode</span>
+                                        </button>
                                     </div>
-                                `;
+                                </div>
+                            `;
 
-                                episodeDiv.onclick = () => {
-                                    window.location.href = `episodehindi.html?link=${encodeURIComponent(ep.link)}`;
-                                };
-
-                                episodesDiv.appendChild(episodeDiv);
-                            });
-                        };
-
-                        // Initial render of all episodes
-                        renderEpisodes(data.episodes);
-
-                        // Set up watch button for first episode
-                        if (data.episodes.length > 0) {
-                            const watchButton = document.getElementById('watch-button');
-                            watchButton.onclick = () => {
-                                window.location.href = `episodehindi.html?link=${encodeURIComponent(data.episodes[0].link)}`;
+                            episodeDiv.onclick = () => {
+                                window.location.href = `episodehindi.html?link=${encodeURIComponent(ep.link)}`;
                             };
-                        }
 
-                        // Handle season changes
-                        seasonSelect.addEventListener("change", async (e) => {
-                            const selectedSeason = e.target.value;
-                            if (selectedSeason === "all") {
-                                renderEpisodes(data.episodes);
-                            } else {
-                                // Fetch episodes for the selected season
-                                const seasonUrl = `https://aniscrap.vercel.app/anime/season?season=${selectedSeason}&post=${data.post_id}`;
-                                try {
-                                    const seasonResponse = await fetch(seasonUrl);
-                                    if (!seasonResponse.ok) throw new Error('Failed to fetch season data');
-                                    const seasonData = await seasonResponse.json();
-                                    renderEpisodes(seasonData.other_episodes);
-                                } catch (error) {
-                                    console.error('Error fetching season data:', error);
-                                    alert('Failed to load episodes for the selected season. Please try again.');
-                                }
-                            }
+                            episodesDiv.appendChild(episodeDiv);
                         });
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        loadingEl.innerHTML = `
-                            <div class="text-center space-y-4">
-                                <p class="text-red-500 text-xl">Failed to load anime details.</p>
-                                <button onclick="window.location.reload()" class="mt-4 bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 smooth-transition">
-                                    Try Again
-                                </button>
-                            </div>
-                        `;
+                    };
+
+                    // Initial render of all episodes
+                    renderEpisodes(data.episodes);
+
+                    // Set up watch button
+                    const watchButton = document.getElementById('watch-button');
+                    if (data.episodes.length > 0) {
+                        watchButton.onclick = () => {
+                            window.location.href = `episodehindi.html?link=${encodeURIComponent(data.episodes[0].link)}`;
+                        };
+                    } else {
+                        watchButton.onclick = () => {
+                            window.location.href = `episodehindi.html?id=${encodeURIComponent(url)}`;
+                        };
+                    }
+
+                    // Handle season changes
+                    seasonSelect.addEventListener("change", async (e) => {
+                        const selectedSeason = e.target.value;
+                        if (selectedSeason === "all") {
+                            renderEpisodes(data.episodes);
+                        } else {
+                            // Fetch episodes for the selected season
+                            const seasonUrl = `https://aniscrap.vercel.app/anime/season?season=${selectedSeason}&post=${data.post_id}`;
+                            try {
+                                const seasonResponse = await fetch(seasonUrl);
+                                if (!seasonResponse.ok) throw new Error('Failed to fetch season data');
+                                const seasonData = await seasonResponse.json();
+                                renderEpisodes(seasonData.other_episodes);
+                            } catch (error) {
+                                console.error('Error fetching season data:', error);
+                                alert('Failed to load episodes for the selected season. Please try again.');
+                            }
+                        }
                     });
-            }
-        });
-    </script>
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    loadingEl.innerHTML = `
+                        <div class="text-center space-y-4">
+                            <p class="text-red-500 text-xl">Failed to load anime details.</p>
+                            <button onclick="window.location.reload()" class="mt-4 bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 smooth-transition">
+                                Try Again
+                            </button>
+                        </div>
+                    `;
+                });
+        }
+    });
+</script>
 </body>
 </html>
