@@ -777,7 +777,7 @@ async function fetchSearchResults(query, page = 1) {
     document.getElementById('searchTitle').textContent = `Search Results for "${query}"`;
     
     try {
-        const response = await fetch(`https://aniscrap.vercel.app/search?q=${encodeURIComponent(query)}`);
+        const response = await fetch(`https://aniscrap.vercel.app/searchsugg/?term=${encodeURIComponent(query)}`);
         const data = await response.json();
         
         if (data && data.length > 0) {
@@ -807,31 +807,20 @@ function displaySearchResults(results) {
     container.innerHTML = ""; // Clear previous results
 
     results.forEach(anime => {
-        const card = document.createElement('div');
-        card.className = 'anime-card flex-shrink-0 w-40 md:w-48 lg:w-56 rounded-md overflow-hidden relative cursor-pointer';
+        const resultItem = document.createElement('div');
+        resultItem.className = 'p-3 border-b border-gray-700 hover:bg-gray-800 cursor-pointer transition';
 
-        // Add click event to open anime details page
-        card.addEventListener("click", () => {
-            const animeId = anime.idanime || anime.Link || "";
-            const animeFormat = anime.format || "";
-            window.location.href = `animedetailshindi.html?id=${encodeURIComponent(animeId)}&format=${encodeURIComponent(animeFormat)}`;
+        // Click event to open the anime link
+        resultItem.addEventListener("click", () => {
+            window.location.href = `animedetailshindi.html?id=${encodeURIComponent(anime.url)}&format=${encodeURIComponent(anime.type)}`;  
         });
 
-        card.innerHTML = `
-            <img src="${anime.Image || '/api/placeholder/400/600'}" 
-                alt="${anime.Title}" 
-                class="w-full h-56 md:h-64 object-cover">
-            <div class="anime-info absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-3">
-                <h3 class="text-white text-sm font-medium">${anime.Title}</h3>
-                <div class="flex items-center mt-1 space-x-2 text-xs text-gray-300">
-                    ${anime.Year ? `<span>${anime.Year} </span>` : ''}
-                    ${anime.totalep && anime.format ? `<span>•</span>` : ''}
-                    ${anime.Rating ? `<span>Rating ${anime.Rating}</span>` : ''}
-                </div>
-            </div>
+        resultItem.innerHTML = `
+            <h3 class="text-white text-lg font-medium">${anime.title}</h3>
+            <p class="text-gray-400 text-sm">${anime.type}</p>
         `;
 
-        container.appendChild(card);
+        container.appendChild(resultItem);
     });
 }
 // Fallback data in case API fails
