@@ -100,7 +100,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
-                            Watch Now
+                            Add Favourite
                         </a>
                     </div>
                 </div>
@@ -296,7 +296,7 @@
                     const epTypeBg = epType === "DUB" ? "bg-purple-700" : "bg-blue-700";
 
                     return `
-                    <a href="watch.html?id=${encodeURIComponent(episode.id)}" target="_blank" class="episode-card bg-gray-700 hover:bg-gray-600 rounded-lg overflow-hidden relative">
+<a href="watch.html?id=${encodeURIComponent(episode.id)}&number=${episode.episodeNumber}" target="_blank" class="episode-card bg-gray-700 hover:bg-gray-600 rounded-lg overflow-hidden relative">
                         <div class="p-4">
                             <div class="flex items-center justify-between mb-2">
                                 <span class="font-medium text-lg">Ep ${episode.number}</span>
