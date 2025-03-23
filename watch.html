@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NetAnime</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#FF2E54',
+                        secondary: '#4A56A6',
+                        dark: '#151920',
+                        darker: '#0E1218'
+                    }
+                }
+            }
+        };
+    </script>
+    <style>
+        :root {
+            --shimmer-bg: #1E212A;
+            --shimmer-highlight: #2A303C;
+        }
+        /* Cleaner scrollbar */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(156, 163, 175, 0.3); border-radius: 5px; }
+    </style>
+</head>
+<body class="bg-dark text-gray-100 min-h-screen">
+    <!-- Navbar -->
+    <nav class="bg-darker text-white shadow-md sticky top-0 z-50">
+        <div class="container mx-auto py-4 px-6 flex items-center justify-between">
+            <h1 class="text-2xl font-bold text-primary">NetAnime</h1>
+                        <button id="back-btn" class="text-sm bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-full transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                Back
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mx-auto px-4 py-6">
+        <!-- Video Player -->
+        <div class="relative bg-black rounded-lg overflow-hidden w-full" style="aspect-ratio: 16/9;">
+            <iframe id="videoPlayer" allowfullscreen class="w-full h-full"></iframe>
+            
+            <!-- Loading Overlay -->
+            <div id="loadingOverlay" class="absolute inset-0 bg-black bg-opacity-70 flex items-center justify-center">
+                <div class="text-center">
+                    <svg class="animate-spin h-10 w-10 text-primary mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <p class="text-white mt-3">Loading player...</p>
+                </div>
+            </div>
+            
+            <!-- Error Overlay -->
+            <div id="errorOverlay" class="absolute inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden">
+                <div class="text-center p-6">
+                    <svg class="h-12 w-12 text-red-500 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    <p class="text-white mt-3" id="errorMessage">Failed to load video player</p>
+                    <button id="retryButton" class="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition">
+                        Retry
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Version and Server Selection -->
+        <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Version Toggle -->
+            <div class="bg-gray-800 p-4 rounded-lg shadow">
+                <h3 class="text-lg font-medium text-gray-100 mb-3">Select Version</h3>
+                <div class="flex space-x-3">
+                    <button id="subButton" onclick="changeVersion('sub')" class="flex-1 px-4 py-2 bg-primary text-white rounded hover:bg-opacity-90 transition focus:outline-none focus:ring-2 focus:ring-primary">
+                        <span class="flex items-center justify-center">
+                            <svg class="h-4 w-4 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
+                            </svg>
+                            Subbed
+                        </span>
+                    </button>
+                    <button id="dubButton" onclick="changeVersion('dub')" class="flex-1 px-4 py-2 bg-gray-700 text-gray-100 rounded hover:bg-gray-600 transition focus:outline-none focus:ring-2 focus:ring-gray-400">
+                        <span class="flex items-center justify-center">
+                            <svg class="h-4 w-4 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                            </svg>
+                            Dubbed
+                        </span>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Server Selection -->
+            <div class="bg-gray-800 p-4 rounded-lg shadow">
+                <h3 class="text-lg font-medium text-gray-100 mb-3">Select Server</h3>
+                <div id="serverButtons" class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    <div class="bg-gray-700 animate-pulse h-10 rounded"></div>
+                    <div class="bg-gray-700 animate-pulse h-10 rounded"></div>
+                    <div class="bg-gray-700 animate-pulse h-10 rounded"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Status Bar -->
+        <div class="mt-6 bg-gray-800 p-3 rounded-lg text-sm text-gray-400 flex items-center justify-between">
+            <div id="statusMessage">
+                <span class="inline-flex items-center">
+                    <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Loading servers...
+                </span>
+            </div>
+            <div>
+                <span class="bg-primary text-white px-2 py-1 rounded text-xs font-medium" id="activeVersion">SUB</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Cache DOM elements
+        const serverButtons = document.getElementById("serverButtons");
+        const videoPlayer = document.getElementById("videoPlayer");
+        const loadingOverlay = document.getElementById("loadingOverlay");
+        const errorOverlay = document.getElementById("errorOverlay");
+        const errorMessage = document.getElementById("errorMessage");
+        const retryButton = document.getElementById("retryButton");
+        const statusMessage = document.getElementById("statusMessage");
+        const subButton = document.getElementById("subButton");
+        const dubButton = document.getElementById("dubButton");
+        const activeVersion = document.getElementById("activeVersion");
+        
+        // Constants
+        const embedBase = "https://api.anixtv.in/src/player/";
+        let servers = { sub: [], dub: [] };
+        let currentVersion = "sub";
+        let currentServer = "";
+        let isLoading = true;
+        
+        // Get and process anime ID
+        const urlParams = new URLSearchParams(window.location.search);
+        let animeId = urlParams.get("id") || "";
+        
+        // Initialize
+        function init() {
+            if (!animeId) {
+                showError("Anime ID is missing! Please check the URL.");
+                return;
+            }
+            
+            // Convert anime ID if needed
+            const parts = animeId.split("$");
+            if (parts.length >= 3) {
+                animeId = `${parts[0]}?ep=${parts[2]}&ep=1`;
+            }
+            
+            fetchServers();
+        }
+                // Back button functionality
+        document.getElementById("back-btn").addEventListener("click", () => {
+            history.back();
+        });
+        
+        // Fetch available servers
+        function fetchServers() {
+            setStatus("Loading servers...", true);
+            showLoading();
+            
+            const apiURL = `https://proxy.tohost.site/api/v1/streamingProxy?url=https://api.anixtv.in/src/ajax/server.php?episodeId=${animeId}`;
+            
+            fetch(apiURL)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Network error: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (!data || (!data.sub?.length && !data.dub?.length)) {
+                        throw new Error("No servers available");
+                    }
+                    
+                    servers = { 
+                        sub: data.sub || [], 
+                        dub: data.dub || [] 
+                    };
+                    
+                    setStatus("Servers loaded successfully", false);
+                    setTimeout(() => {
+                        setStatus("Ready to play", false);
+                    }, 2000);
+                    
+                    // Default to sub version
+                    changeVersion("sub");
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                    showError(error.message || "Failed to fetch servers");
+                });
+        }
+
+        // Change version (sub/dub)
+        function changeVersion(version) {
+            currentVersion = version;
+            
+            // Update UI
+            if (version === "sub") {
+                subButton.className = "flex-1 px-4 py-2 bg-primary text-white rounded hover:bg-opacity-90 transition focus:outline-none focus:ring-2 focus:ring-primary";
+                dubButton.className = "flex-1 px-4 py-2 bg-gray-700 text-gray-100 rounded hover:bg-gray-600 transition focus:outline-none focus:ring-2 focus:ring-gray-400";
+                activeVersion.innerText = "SUB";
+                activeVersion.className = "bg-primary text-white px-2 py-1 rounded text-xs font-medium";
+            } else {
+                dubButton.className = "flex-1 px-4 py-2 bg-primary text-white rounded hover:bg-opacity-90 transition focus:outline-none focus:ring-2 focus:ring-primary";
+                subButton.className = "flex-1 px-4 py-2 bg-gray-700 text-gray-100 rounded hover:bg-gray-600 transition focus:outline-none focus:ring-2 focus:ring-gray-400";
+                activeVersion.innerText = "DUB";
+                activeVersion.className = "bg-primary text-white px-2 py-1 rounded text-xs font-medium";
+            }
+            
+            loadServers(version);
+        }
+
+        // Load server buttons for selected version
+        function loadServers(version) {
+    serverButtons.innerHTML = "";
+    
+    const versionServers = servers[version];
+    
+    if (!versionServers || versionServers.length === 0) {
+        serverButtons.innerHTML = `
+            <div class="col-span-full text-center py-4">
+                <svg class="h-6 w-6 text-red-500 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <p class="mt-2 text-red-600">No ${version} servers available</p>
+            </div>
+        `;
+        return;
+    }
+    
+    // Define buttonClass here
+    const buttonClass = "w-full py-2 rounded focus:outline-none focus:ring-2 transition";
+    
+    versionServers.forEach(server => {
+        const button = document.createElement("button");
+        
+        button.innerHTML = `
+            <span class="text-sm">${server.serverName}</span>
+        `;
+        
+        button.className = buttonClass + " bg-gray-700 text-gray-100 hover:bg-gray-600 focus:ring-gray-400";
+        button.onclick = () => {
+            // Update active button
+            document.querySelectorAll('#serverButtons button').forEach(btn => {
+                btn.className = buttonClass + " bg-gray-700 text-gray-100 hover:bg-gray-600 focus:ring-gray-400";
+            });
+            button.className = buttonClass + " bg-primary text-white hover:bg-opacity-90 focus:ring-primary";
+            
+            loadVideo(version, server.serverName);
+        };
+        serverButtons.appendChild(button);
+    });
+    
+    // Auto-load first server
+    if (versionServers.length > 0) {
+        loadVideo(version, versionServers[0].serverName);
+        document.querySelector('#serverButtons button').className = 
+            buttonClass + " bg-primary text-white hover:bg-opacity-90 focus:ring-primary";
+    }
+}
+        
+        // Load video from selected server
+        function loadVideo(version, serverName) {
+            currentServer = serverName;
+            showLoading();
+            setStatus(`Loading video from ${serverName} server...`, true);
+            
+            const embedUrl = `${embedBase}${version}.php?id=${animeId}&server=${serverName}&embed=true&skip=true`;
+            videoPlayer.src = embedUrl;
+            
+            // Hide loading overlay after iframe loads
+            videoPlayer.onload = () => {
+                hideLoading();
+                setStatus(`Playing on ${serverName} server`, false);
+            };
+            
+            // Show error if iframe fails to load
+            videoPlayer.onerror = () => {
+                showError(`Failed to load video from ${serverName} server`);
+            };
+            
+            // Set timeout in case onload never fires
+            setTimeout(() => {
+                if (isLoading) {
+                    hideLoading();
+                }
+            }, 8000);
+        }
+        
+        // Show loading overlay
+        function showLoading() {
+            isLoading = true;
+            loadingOverlay.classList.remove("hidden");
+            errorOverlay.classList.add("hidden");
+        }
+        
+        // Hide loading overlay
+        function hideLoading() {
+            isLoading = false;
+            loadingOverlay.classList.add("hidden");
+        }
+        
+        // Show error overlay
+        function showError(message) {
+            errorMessage.textContent = message;
+            loadingOverlay.classList.add("hidden");
+            errorOverlay.classList.remove("hidden");
+            setStatus(`Error: ${message}`, false, true);
+        }
+        
+        // Update status message
+        function setStatus(message, isLoading = false, isError = false) {
+            let iconHTML = '';
+            let textClass = '';
+            
+            if (isLoading) {
+                iconHTML = `
+                    <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                `;
+            } else if (isError) {
+                iconHTML = `
+                    <svg class="-ml-1 mr-2 h-4 w-4 text-red-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                `;
+                textClass = 'text-red-600';
+            } else {
+                iconHTML = `
+                    <svg class="-ml-1 mr-2 h-4 w-4 text-green-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                `;
+            }
+            
+            statusMessage.innerHTML = `
+                <span class="inline-flex items-center ${textClass}">
+                    ${iconHTML}
+                    ${message}
+                </span>
+            `;
+        }
+        
+        // Retry button click handler
+        retryButton.addEventListener("click", () => {
+            if (currentServer) {
+                loadVideo(currentVersion, currentServer);
+            } else {
+                fetchServers();
+            }
+        });
+        
+        // Initialize on page load
+        window.addEventListener("load", init);
+    </script>
+</body>
+</html>
