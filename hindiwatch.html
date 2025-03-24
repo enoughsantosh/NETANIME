@@ -5,12 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NetAnime</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.js"></script>
-        <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
         
         body {
             font-family: 'Poppins', sans-serif;
+            background-color: #1a1a1a;
+            color: #e5e7eb;
         }
         
         .video-container {
@@ -43,40 +45,39 @@
     </style>
 </head>
 
-<body class="bg-gray-100 text-gray-800">
+<body class="bg-gray-900 text-gray-100">
     <div class="container mx-auto px-4 py-6 max-w-6xl">
         <!-- Header -->
-        <header class="flex justify-between items-center mb-6 pb-4 border-b border-gray-200">
-
+        <header class="flex justify-between items-center mb-6 pb-4 border-b border-gray-700">
             <div id="anime-title" class="text-lg font-medium">Loading...</div>
         </header>
         
         <!-- Player Section -->
-        <div class="bg-white rounded-lg shadow-md overflow-hidden mb-6">
+        <div class="bg-gray-800 rounded-lg shadow-md overflow-hidden mb-6">
             <!-- Video Container -->
             <div class="video-container bg-black">
                 <iframe id="video-frame" allowfullscreen frameborder="0"></iframe>
             </div>
             
             <!-- Controls -->
-            <div class="p-4 bg-gray-50 border-t border-gray-200">
+            <div class="p-4 bg-gray-700 border-t border-gray-600">
                 <div class="flex flex-wrap gap-4 items-center">
                     <!-- Episode Selector -->
                     <div class="flex-grow min-w-[200px]">
-                        <select id="episode-select" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                        <select id="episode-select" class="w-full px-4 py-2 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 bg-gray-800 text-gray-100">
                             <option value="">Loading episodes...</option>
                         </select>
                     </div>
                     
                     <!-- Navigation Buttons -->
                     <div class="flex gap-2">
-                        <button id="prev-btn" disabled class="px-4 py-2 bg-red-600 text-white rounded-md flex items-center gap-1 disabled:opacity-50 disabled:bg-gray-400">
+                        <button id="prev-btn" disabled class="px-4 py-2 bg-red-600 text-white rounded-md flex items-center gap-1 disabled:opacity-50 disabled:bg-gray-600">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M15 18l-6-6 6-6"/>
                             </svg>
                             Prev
                         </button>
-                        <button id="next-btn" disabled class="px-4 py-2 bg-red-600 text-white rounded-md flex items-center gap-1 disabled:opacity-50 disabled:bg-gray-400">
+                        <button id="next-btn" disabled class="px-4 py-2 bg-red-600 text-white rounded-md flex items-center gap-1 disabled:opacity-50 disabled:bg-gray-600">
                             Next
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M9 18l6-6-6-6"/>
@@ -86,7 +87,7 @@
                 </div>
                 
                 <!-- Status Bar -->
-                <div id="status" class=" hidden mt-4 flex items-center text-sm text-gray-600">
+                <div id="status" class="hidden mt-4 flex items-center text-sm text-gray-400">
                     <div class="w-2 h-2 bg-yellow-500 rounded-full mr-2"></div>
                     <span id="status-text">Loading content...</span>
                 </div>
@@ -94,8 +95,8 @@
         </div>
         
         <!-- Episode List -->
-        <div class="bg-white rounded-lg shadow-md p-4">
-            <h2 class="text-xl font-semibold mb-4 text-gray-800">Episodes</h2>
+        <div class="bg-gray-800 rounded-lg shadow-md p-4">
+            <h2 class="text-xl font-semibold mb-4 text-gray-100">Episodes</h2>
             
             <!-- Season Tabs -->
             <div id="season-tabs" class="flex flex-wrap gap-2 mb-4"></div>
@@ -144,7 +145,7 @@
             
             // Display error message
             const errorDiv = document.createElement('div');
-            errorDiv.className = 'mt-2 p-2 bg-red-100 text-red-700 rounded';
+            errorDiv.className = 'mt-2 p-2 bg-red-900 text-red-300 rounded';
             errorDiv.textContent = message;
             document.getElementById('status').appendChild(errorDiv);
             
@@ -268,14 +269,14 @@
             seasons.forEach(season => {
                 const tab = document.createElement('button');
                 tab.className = 'px-3 py-1 rounded-full text-sm font-medium';
-                tab.classList.add(state.currentSeason === season ? 'bg-red-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300');
+                tab.classList.add(state.currentSeason === season ? 'bg-red-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600');
                 tab.textContent = `Season ${season}`;
                 tab.onclick = () => {
                     document.querySelectorAll('#season-tabs button').forEach(t => {
                         t.classList.remove('bg-red-600', 'text-white');
-                        t.classList.add('bg-gray-200', 'text-gray-700', 'hover:bg-gray-300');
+                        t.classList.add('bg-gray-700', 'text-gray-300', 'hover:bg-gray-600');
                     });
-                    tab.classList.remove('bg-gray-200', 'text-gray-700', 'hover:bg-gray-300');
+                    tab.classList.remove('bg-gray-700', 'text-gray-300', 'hover:bg-gray-600');
                     tab.classList.add('bg-red-600', 'text-white');
                     renderEpisodesForSeason(season);
                 };
@@ -301,7 +302,7 @@
                 if (state.currentSeason === season && state.currentEpisode === episode) {
                     card.classList.add('bg-red-600', 'text-white', 'border-red-600');
                 } else {
-                    card.classList.add('bg-white', 'text-gray-800', 'border-gray-200', 'hover:bg-gray-100');
+                    card.classList.add('bg-gray-700', 'text-gray-300', 'border-gray-600', 'hover:bg-gray-600');
                 }
                 
                 card.textContent = `Ep ${episode}`;
@@ -314,10 +315,10 @@
         function updateEpisodeGrid() {
             document.querySelectorAll('#season-tabs button').forEach(tab => {
                 tab.classList.remove('bg-red-600', 'text-white');
-                tab.classList.add('bg-gray-200', 'text-gray-700', 'hover:bg-gray-300');
+                tab.classList.add('bg-gray-700', 'text-gray-300', 'hover:bg-gray-600');
                 
                 if (tab.textContent === `Season ${state.currentSeason}`) {
-                    tab.classList.remove('bg-gray-200', 'text-gray-700', 'hover:bg-gray-300');
+                    tab.classList.remove('bg-gray-700', 'text-gray-300', 'hover:bg-gray-600');
                     tab.classList.add('bg-red-600', 'text-white');
                 }
             });
@@ -413,4 +414,4 @@
         fetchVideos();
     </script>
 </body>
-  </html>
+    </html>
