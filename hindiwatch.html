@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NetAnime</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.js"></script>
+        <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        .video-container {
+            position: relative;
+            width: 100%;
+            padding-top: 56.25%; /* 16:9 Aspect Ratio */
+        }
+        
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .loader {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100 text-gray-800">
+    <div class="container mx-auto px-4 py-6 max-w-6xl">
+        <!-- Header -->
+        <header class="flex justify-between items-center mb-6 pb-4 border-b border-gray-200">
+
+            <div id="anime-title" class="text-lg font-medium">Loading...</div>
+        </header>
+        
+        <!-- Player Section -->
+        <div class="bg-white rounded-lg shadow-md overflow-hidden mb-6">
+            <!-- Video Container -->
+            <div class="video-container bg-black">
+                <iframe id="video-frame" allowfullscreen frameborder="0"></iframe>
+            </div>
+            
+            <!-- Controls -->
+            <div class="p-4 bg-gray-50 border-t border-gray-200">
+                <div class="flex flex-wrap gap-4 items-center">
+                    <!-- Episode Selector -->
+                    <div class="flex-grow min-w-[200px]">
+                        <select id="episode-select" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                            <option value="">Loading episodes...</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Navigation Buttons -->
+                    <div class="flex gap-2">
+                        <button id="prev-btn" disabled class="px-4 py-2 bg-red-600 text-white rounded-md flex items-center gap-1 disabled:opacity-50 disabled:bg-gray-400">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M15 18l-6-6 6-6"/>
+                            </svg>
+                            Prev
+                        </button>
+                        <button id="next-btn" disabled class="px-4 py-2 bg-red-600 text-white rounded-md flex items-center gap-1 disabled:opacity-50 disabled:bg-gray-400">
+                            Next
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M9 18l6-6-6-6"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Status Bar -->
+                <div id="status" class=" hidden mt-4 flex items-center text-sm text-gray-600">
+                    <div class="w-2 h-2 bg-yellow-500 rounded-full mr-2"></div>
+                    <span id="status-text">Loading content...</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Episode List -->
+        <div class="bg-white rounded-lg shadow-md p-4">
+            <h2 class="text-xl font-semibold mb-4 text-gray-800">Episodes</h2>
+            
+            <!-- Season Tabs -->
+            <div id="season-tabs" class="flex flex-wrap gap-2 mb-4"></div>
+            
+            <!-- Episode Grid -->
+            <div id="episode-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2"></div>
+        </div>
+    </div>
+
+    <script>
+        // State management
+        const state = {
+            currentSeason: null,
+            currentEpisode: null,
+            seasons: {},
+            animeTitle: '',
+            isLoading: true
+        };
+        
+        // DOM elements
+        const videoFrame = document.getElementById('video-frame');
+        const episodeSelect = document.getElementById('episode-select');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const statusText = document.getElementById('status-text');
+        const statusDot = document.querySelector('#status div');
+        const seasonTabsContainer = document.getElementById('season-tabs');
+        const episodeGrid = document.getElementById('episode-grid');
+        const animeTitle = document.getElementById('anime-title');
+        
+        // Helper functions
+        function setLoading(isLoading) {
+            state.isLoading = isLoading;
+            if (isLoading) {
+                statusDot.className = 'w-2 h-2 bg-yellow-500 rounded-full mr-2';
+                statusText.innerHTML = '<div class="loader mr-2"></div> Loading...';
+            } else {
+                statusDot.className = 'w-2 h-2 bg-green-500 rounded-full mr-2';
+                statusText.textContent = 'Ready to play';
+            }
+        }
+        
+        function setError(message) {
+            statusDot.className = 'w-2 h-2 bg-red-500 rounded-full mr-2';
+            statusText.textContent = message;
+            
+            // Display error message
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'mt-2 p-2 bg-red-100 text-red-700 rounded';
+            errorDiv.textContent = message;
+            document.getElementById('status').appendChild(errorDiv);
+            
+            // Remove after 5 seconds
+            setTimeout(() => {
+                errorDiv.remove();
+            }, 5000);
+        }
+        
+        function updateEpisodeSelect() {
+            // Clear existing options
+            episodeSelect.innerHTML = '';
+            
+            // Add all episodes from all seasons
+            for (const season in state.seasons) {
+                const episodes = state.seasons[season];
+                
+                for (const episode in episodes) {
+                    const option = document.createElement('option');
+                    option.value = JSON.stringify({season, episode});
+                    option.innerText = `Season ${season} - Episode ${episode}`;
+                    episodeSelect.appendChild(option);
+                    
+                    // Select current episode
+                    if (state.currentSeason === season && state.currentEpisode === episode) {
+                        option.selected = true;
+                    }
+                }
+            }
+        }
+        
+        function loadEpisode(season, episode) {
+            if (!state.seasons[season] || !state.seasons[season][episode]) {
+                setError('Episode not found!');
+                return;
+            }
+            
+            setLoading(true);
+            
+            // Update state
+            state.currentSeason = season;
+            state.currentEpisode = episode;
+            
+            // Update video
+            const episodeUrl = state.seasons[season][episode];
+            videoFrame.src = episodeUrl;
+            
+            // Update UI
+            updateEpisodeSelect();
+            updateNavigationButtons();
+            updateEpisodeGrid();
+            
+            // Update URL parameter without reloading
+            const urlParams = new URLSearchParams(window.location.search);
+            const animeId = urlParams.get('id').split('$episode')[0];
+            const newUrl = `${window.location.pathname}?id=${animeId}$episode=${season}-${episode}`;
+            window.history.replaceState({}, document.title, newUrl);
+            
+            setLoading(false);
+        }
+        
+        function updateNavigationButtons() {
+            // Find current episode index in sorted array
+            const seasons = Object.keys(state.seasons).sort((a, b) => parseInt(a) - parseInt(b));
+            let prevSeason, prevEp, nextSeason, nextEp;
+            
+            for (let s = 0; s < seasons.length; s++) {
+                const season = seasons[s];
+                const episodes = Object.keys(state.seasons[season]).sort((a, b) => parseInt(a) - parseInt(b));
+                
+                for (let e = 0; e < episodes.length; e++) {
+                    const episode = episodes[e];
+                    
+                    if (season === state.currentSeason && episode === state.currentEpisode) {
+                        // Previous episode
+                        if (e > 0) {
+                            prevSeason = season;
+                            prevEp = episodes[e - 1];
+                        } else if (s > 0) {
+                            prevSeason = seasons[s - 1];
+                            const prevEpisodes = Object.keys(state.seasons[prevSeason]).sort((a, b) => parseInt(a) - parseInt(b));
+                            prevEp = prevEpisodes[prevEpisodes.length - 1];
+                        }
+                        
+                        // Next episode
+                        if (e < episodes.length - 1) {
+                            nextSeason = season;
+                            nextEp = episodes[e + 1];
+                        } else if (s < seasons.length - 1) {
+                            nextSeason = seasons[s + 1];
+                            const nextEpisodes = Object.keys(state.seasons[nextSeason]).sort((a, b) => parseInt(a) - parseInt(b));
+                            nextEp = nextEpisodes[0];
+                        }
+                        
+                        break;
+                    }
+                }
+            }
+            
+            // Enable/disable buttons
+            if (prevSeason && prevEp) {
+                prevBtn.disabled = false;
+                prevBtn.onclick = () => loadEpisode(prevSeason, prevEp);
+            } else {
+                prevBtn.disabled = true;
+            }
+            
+            if (nextSeason && nextEp) {
+                nextBtn.disabled = false;
+                nextBtn.onclick = () => loadEpisode(nextSeason, nextEp);
+            } else {
+                nextBtn.disabled = true;
+            }
+        }
+        
+        function renderSeasonTabs() {
+            seasonTabsContainer.innerHTML = '';
+            
+            const seasons = Object.keys(state.seasons).sort((a, b) => parseInt(a) - parseInt(b));
+            
+            seasons.forEach(season => {
+                const tab = document.createElement('button');
+                tab.className = 'px-3 py-1 rounded-full text-sm font-medium';
+                tab.classList.add(state.currentSeason === season ? 'bg-red-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300');
+                tab.textContent = `Season ${season}`;
+                tab.onclick = () => {
+                    document.querySelectorAll('#season-tabs button').forEach(t => {
+                        t.classList.remove('bg-red-600', 'text-white');
+                        t.classList.add('bg-gray-200', 'text-gray-700', 'hover:bg-gray-300');
+                    });
+                    tab.classList.remove('bg-gray-200', 'text-gray-700', 'hover:bg-gray-300');
+                    tab.classList.add('bg-red-600', 'text-white');
+                    renderEpisodesForSeason(season);
+                };
+                
+                seasonTabsContainer.appendChild(tab);
+            });
+            
+            // Render episodes for current season or first season
+            renderEpisodesForSeason(state.currentSeason || seasons[0]);
+        }
+        
+        function renderEpisodesForSeason(season) {
+            episodeGrid.innerHTML = '';
+            
+            if (!state.seasons[season]) return;
+            
+            const episodes = Object.keys(state.seasons[season]).sort((a, b) => parseInt(a) - parseInt(b));
+            
+            episodes.forEach(episode => {
+                const card = document.createElement('button');
+                card.className = 'p-2 text-center rounded border text-sm';
+                
+                if (state.currentSeason === season && state.currentEpisode === episode) {
+                    card.classList.add('bg-red-600', 'text-white', 'border-red-600');
+                } else {
+                    card.classList.add('bg-white', 'text-gray-800', 'border-gray-200', 'hover:bg-gray-100');
+                }
+                
+                card.textContent = `Ep ${episode}`;
+                card.onclick = () => loadEpisode(season, episode);
+                
+                episodeGrid.appendChild(card);
+            });
+        }
+        
+        function updateEpisodeGrid() {
+            document.querySelectorAll('#season-tabs button').forEach(tab => {
+                tab.classList.remove('bg-red-600', 'text-white');
+                tab.classList.add('bg-gray-200', 'text-gray-700', 'hover:bg-gray-300');
+                
+                if (tab.textContent === `Season ${state.currentSeason}`) {
+                    tab.classList.remove('bg-gray-200', 'text-gray-700', 'hover:bg-gray-300');
+                    tab.classList.add('bg-red-600', 'text-white');
+                }
+            });
+            
+            renderEpisodesForSeason(state.currentSeason);
+        }
+        
+        // Event listeners
+        episodeSelect.addEventListener('change', function() {
+            if (!this.value) return;
+            
+            const { season, episode } = JSON.parse(this.value);
+            loadEpisode(season, episode);
+        });
+        
+        videoFrame.addEventListener('load', function() {
+            setLoading(false);
+        });
+        
+        // Initial data fetch
+        async function fetchVideos() {
+            setLoading(true);
+            
+            // Get query parameters from URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const query = urlParams.get('id');
+            
+            if (!query) {
+                setError('No anime ID found in URL!');
+                return;
+            }
+            
+            // Parse anime ID and episode (if available)
+            const parts = query.split('$episode');
+            const animeId = parts[0];
+            let targetEpisode = null;
+            
+            if (parts.length > 1 && parts[1]) {
+                // Format: season-episode
+                const epParts = parts[1].split('-');
+                if (epParts.length === 2) {
+                    targetEpisode = {
+                        season: epParts[0],
+                        episode: epParts[1]
+                    };
+                }
+            }
+            
+            // Set anime title (from ID for now)
+            state.animeTitle = animeId.replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+            animeTitle.textContent = state.animeTitle;
+            
+            const apiUrl = `https://animerulzscrap.vercel.app/home?query=${encodeURIComponent(animeId)}`;
+            
+            try {
+                const response = await fetch(apiUrl);
+                
+                if (!response.ok) {
+                    throw new Error(`API returned status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                if (Object.keys(data).length === 0) {
+                    setError('No videos found for this anime!');
+                    return;
+                }
+                
+                // Store in state
+                state.seasons = data;
+                
+                // Find first episode or requested episode
+                let firstSeason = Object.keys(data).sort((a, b) => parseInt(a) - parseInt(b))[0];
+                let firstEpisode = Object.keys(data[firstSeason]).sort((a, b) => parseInt(a) - parseInt(b))[0];
+                
+                // Load target episode if specified
+                if (targetEpisode && data[targetEpisode.season] && data[targetEpisode.season][targetEpisode.episode]) {
+                    loadEpisode(targetEpisode.season, targetEpisode.episode);
+                } else {
+                    loadEpisode(firstSeason, firstEpisode);
+                }
+                
+                // Render season tabs and episode grid
+                renderSeasonTabs();
+                
+            } catch (error) {
+                setError(`Failed to fetch videos: ${error.message}`);
+                console.error('Error fetching videos:', error);
+            }
+        }
+        
+        // Initialize 
+        fetchVideos();
+    </script>
+</body>
+  </html>
