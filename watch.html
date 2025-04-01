@@ -178,7 +178,7 @@
             setStatus("Loading servers...", true);
             showLoading();
             
-            const apiURL = `https://proxy.trekquests.com/api/v1/streamingProxy?url=https://api.anixtv.in/src/ajax/server.php?episodeId=${animeId}`;
+            const apiURL = `https://cors.karankingrider.workers.dev/?url=https://api.anixtv.in/src/ajax/server.php?episodeId=${animeId}`;
             
             fetch(apiURL)
                 .then(response => {
